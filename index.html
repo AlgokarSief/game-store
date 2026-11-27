@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>اسم المتجر | متجر الألعاب الرقمي</title>
+<meta name="description" content="ألعاب، شحن رصيد، اشتراكات وخدمات رقمية بتسليم سريع ودعم مباشر.">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css"></head><body>
+<header><div class="wrap nav"><a class="logo" href="#top"><span>G</span> اسم المتجر</a>
+<button id="burger" aria-label="القائمة">☰</button>
+<nav id="menu"><a href="#cats">الأقسام</a><a href="#products">المنتجات</a><a href="#how">إزاي تطلب</a><a href="#contact">تواصل</a></nav></div></header>
+<section class="hero" id="top"><div class="wrap"><p class="tag">تسليم سريع ✓ دعم مباشر</p>
+<h1>اسم <b>المتجر</b></h1><p class="sub">ألعاب أصلية، شحن رصيد، اشتراكات وخدمات رقمية بأسعار تنافسية.</p>
+<div class="btns"><a class="btn" href="#products">تصفح المنتجات</a><a class="btn ghost" href="#contact">اطلب على واتساب</a></div></div></section>
+<section id="cats" class="wrap"><h2>الأقسام</h2><div class="grid cats">
+<div class="card"><i>🎮</i><h3>ألعاب</h3><p>ألعاب PC وPlayStation</p></div>
+<div class="card"><i>💳</i><h3>شحن رصيد</h3><p>ستيم وبطاقات هدايا</p></div>
+<div class="card"><i>💬</i><h3>اشتراكات</h3><p>ديسكورد وخدمات</p></div>
+<div class="card"><i>🖥️</i><h3>استضافة ألعاب</h3><p>سيرفرات ماينكرافت</p></div>
+<div class="card"><i>⚙️</i><h3>تجميعات PC</h3><p>قطع وتجميعات</p></div></div></section>
+<section id="products" class="wrap"><h2>منتجات مختارة</h2><div class="grid prods">
+<div class="card prod"><div class="ph">صورة</div><h3>لعبة 1</h3><p class="price">590 جنيه</p><a class="btn sm" href="#contact">اطلب</a></div>
+<div class="card prod"><div class="ph">صورة</div><h3>لعبة 2</h3><p class="price">790 جنيه</p><a class="btn sm" href="#contact">اطلب</a></div>
+<div class="card prod"><div class="ph">صورة</div><h3>لعبة 3</h3><p class="price">1090 جنيه</p><a class="btn sm" href="#contact">اطلب</a></div>
+<div class="card prod"><div class="ph">صورة</div><h3>شحن رصيد</h3><p class="price">حسب الفئة</p><a class="btn sm" href="#contact">اطلب</a></div></div></section>
+<section id="how" class="wrap"><h2>إزاي تطلب</h2><div class="grid steps">
+<div class="card"><b>1</b><p>اختار المنتج</p></div><div class="card"><b>2</b><p>كلمنا على واتساب</p></div><div class="card"><b>3</b><p>ادفع (كاش / انستاباي)</p></div><div class="card"><b>4</b><p>استلم طلبك</p></div></div></section>
+<section id="contact" class="wrap"><h2>تواصل معنا</h2><div class="card contact"><p>رقم الواتساب: <a href="#">01XXXXXXXXX</a></p><a class="btn" href="#">واتساب</a></div></section>
+<footer><p>© اسم المتجر</p></footer>
+<script>document.getElementById('burger').onclick=()=>document.getElementById('menu').classList.toggle('open');
+document.querySelectorAll('#menu a').forEach(a=>a.onclick=()=>document.getElementById('menu').classList.remove('open'));</script>
+</body></html>
