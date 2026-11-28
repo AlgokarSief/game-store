@@ -2,8 +2,10 @@ const S = window.STORE;
 const sb = supabase.createClient(S.supabaseUrl, S.supabaseKey);
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-let products = [], cart = JSON.parse(localStorage.getItem("cart") || "[]"), wish = JSON.parse(localStorage.getItem("wish") || "[]"), user = null, curCat = "", slide = 0, timer;
+let products = [], cart = JSON.parse(localStorage.getItem("cart") || "[]"), user = null;
 document.querySelectorAll(".sn").forEach(e => e.textContent = S.name);
+$("burger").onclick = () => $("menu").classList.toggle("open");
+document.querySelectorAll("#menu a").forEach(a => a.addEventListener("click", () => $("menu").classList.remove("open")));
 if (S.whatsapp) $("waLink").href = "https://wa.me/" + S.whatsapp, $("waLink").textContent = "راسلنا";
 function toast(t) { const e = $("toast"); e.textContent = t; e.hidden = false; setTimeout(() => e.hidden = true, 2200); }
 function openModal(html) { $("modalBody").innerHTML = html; $("modal").hidden = false; }
@@ -11,64 +13,20 @@ function closeModal() { $("modal").hidden = true; }
 $("closeModal").onclick = closeModal; $("modal").onclick = e => { if (e.target.id === "modal") closeModal(); };
 const money = n => Number(n).toLocaleString("en-US") + " جنيه";
 function saveCart() { localStorage.setItem("cart", JSON.stringify(cart)); $("cartCount").textContent = cart.reduce((a, i) => a + i.qty, 0); }
-function saveWish() { localStorage.setItem("wish", JSON.stringify(wish)); $("wishCount").textContent = wish.length; $("wishCount").hidden = !wish.length; }
-function addToCart(id) { const it = cart.find(i => i.id === id); it ? it.qty++ : cart.push({ id, qty: 1 }); saveCart(); toast("اتضاف للسلة"); }
-// Steam art: app id is read from the product image URL
-const appOf = p => (String(p.image_url || "").match(/\/apps\/(\d+)\//) || [])[1];
-const steamBase = p => String(p.image_url).split("/apps/")[0] + "/apps/" + appOf(p);
-const heroImg = p => appOf(p) ? steamBase(p) + "/library_hero.jpg" : p.image_url;
-const coverImg = p => appOf(p) ? steamBase(p) + "/library_600x900.jpg" : p.image_url;
-const fb = "this.onerror=null;this.src=this.dataset.fb";
-function feats() { return products.filter(p => p.image_url && p.in_stock).slice(0, 10); }
-function buildHero() {
-  const F = feats(); if (!F.length) return;
-  $("slides").innerHTML = F.map((p, i) => `<div class="sl" data-i="${i}" style="background-image:url('${esc(heroImg(p))}'),url('${esc(p.image_url)}')"></div>`).join("");
-  $("strip").innerHTML = F.map((p, i) => `<button class="th" data-i="${i}" aria-label="${esc(p.name)}"><img src="${esc(coverImg(p))}" data-fb="${esc(p.image_url)}" onerror="${fb}" onload="if(this.naturalWidth&&this.naturalWidth<500){${fb}}" alt=""></button>`).join("") + '<button class="th more" id="moreBtn" aria-label="كل المنتجات">▦</button>';
-  $("dots").innerHTML = F.map((_, i) => `<i data-i="${i}"></i>`).join("");
-  $("strip").querySelectorAll("[data-i]").forEach(b => b.onclick = () => go(+b.dataset.i));
-  $("dots").querySelectorAll("[data-i]").forEach(b => b.onclick = () => go(+b.dataset.i));
-  $("moreBtn").onclick = () => $("products").scrollIntoView({ behavior: "smooth" });
-  go(0);
-}
-function go(i) {
-  const F = feats(); if (!F.length) return; slide = (i + F.length) % F.length; const p = F[slide];
-  document.querySelectorAll(".sl").forEach(e => e.classList.toggle("on", +e.dataset.i === slide));
-  document.querySelectorAll(".th[data-i]").forEach(e => e.classList.toggle("on", +e.dataset.i === slide));
-  document.querySelectorAll("#dots i").forEach(e => e.classList.toggle("on", +e.dataset.i === slide));
-  $("cap").innerHTML = `<h2>${esc(p.name)}</h2><div class="pr">${money(p.price)}</div><button class="btn" data-hadd="${p.id}">أضف للسلة</button><button class="btn ghost" id="hmore">شوف كل المنتجات</button>`;
-  $("cap").querySelector("[data-hadd]").onclick = () => addToCart(p.id);
-  $("hmore").onclick = () => $("products").scrollIntoView({ behavior: "smooth" });
-  clearInterval(timer); timer = setInterval(() => go(slide + 1), 6000);
-}
-$("next").onclick = () => go(slide - 1); $("prev").onclick = () => go(slide + 1);
 function render() {
-  const q = $("q").value.trim().toLowerCase();
-  const list = products.filter(p => (!curCat || p.category === curCat) && (!q || p.name.toLowerCase().includes(q)));
-  $("grid").innerHTML = list.length ? list.map(p => `<div class="pc ${p.in_stock ? "" : "oos"}"><button class="heart ${wish.includes(p.id) ? "on" : ""}" data-w="${p.id}" aria-label="المفضلة">${wish.includes(p.id) ? "♥" : "♡"}</button><div class="im">${p.image_url ? `<img loading="lazy" src="${esc(p.image_url)}" alt="${esc(p.name)}">` : esc(p.name.slice(0, 2).toUpperCase())}</div><div class="bd"><h3>${esc(p.name)}</h3><div class="ft"><span class="price">${money(p.price)}</span>${p.in_stock ? `<button class="add" data-add="${p.id}">أضف للسلة</button>` : `<span class="muted">غير متاح</span>`}</div></div></div>`).join("") : '<p class="muted">مفيش منتجات مطابقة.</p>';
-  $("grid").querySelectorAll("[data-add]").forEach(b => b.onclick = () => addToCart(b.dataset.add));
-  $("grid").querySelectorAll("[data-w]").forEach(b => b.onclick = () => { const id = b.dataset.w; wish = wish.includes(id) ? wish.filter(x => x !== id) : [...wish, id]; saveWish(); render(); });
-}
-function chips() {
-  const cats = [...new Set(products.map(p => p.category).filter(Boolean))];
-  $("chips").innerHTML = ["", ...cats].map(c => `<button class="chip ${c === curCat ? "on" : ""}" data-c="${esc(c)}">${c ? esc(c) : "الكل"}</button>`).join("");
-  $("chips").querySelectorAll("[data-c]").forEach(b => b.onclick = () => { curCat = b.dataset.c; chips(); render(); });
+  const q = $("q").value.trim().toLowerCase(), c = $("cat").value;
+  const list = products.filter(p => (!c || p.category === c) && (!q || p.name.toLowerCase().includes(q)));
+  $("grid").innerHTML = list.length ? list.map(p => `<div class="card prod ${p.in_stock ? "" : "oos"}"><div class="ph">${p.image_url ? `<img src="${esc(p.image_url)}" alt="">` : esc(p.name.slice(0, 2).toUpperCase())}</div><h3>${esc(p.name)}</h3><p class="price">${money(p.price)}</p>${p.in_stock ? `<button class="btn sm" data-add="${p.id}">أضف للسلة</button>` : `<p class="muted">غير متاح</p>`}</div>`).join("") : '<p class="muted">مفيش منتجات.</p>';
+  $("grid").querySelectorAll("[data-add]").forEach(b => b.onclick = () => { const id = b.dataset.add, it = cart.find(i => i.id === id); it ? it.qty++ : cart.push({ id, qty: 1 }); saveCart(); toast("اتضاف للسلة"); });
 }
 async function load() {
   const { data, error } = await sb.from("products").select("*").order("created_at");
   if (error) { $("grid").innerHTML = '<p class="muted">تعذر تحميل المنتجات.</p>'; return; }
-  products = data; chips(); render(); buildHero();
+  products = data; const cats = [...new Set(data.map(p => p.category).filter(Boolean))];
+  $("cat").innerHTML = '<option value="">كل الأقسام</option>' + cats.map(c => `<option>${esc(c)}</option>`).join("");
+  render();
 }
-$("sform").onsubmit = e => { e.preventDefault(); render(); $("products").scrollIntoView({ behavior: "smooth" }); };
-$("q").oninput = render;
-document.querySelectorAll("[data-q]").forEach(a => a.addEventListener("click", () => { $("q").value = a.dataset.q; render(); }));
-document.querySelectorAll("[data-cat]").forEach(a => a.addEventListener("click", () => { curCat = a.dataset.cat; $("q").value = ""; chips(); render(); }));
-$("wishBtn").onclick = () => {
-  const L = wish.map(id => products.find(p => p.id === id)).filter(Boolean);
-  if (!L.length) return openModal("<h3>المفضلة</h3><p class='muted'>لسه مفيش حاجة في المفضلة. دوس على القلب في أي لعبة.</p>");
-  openModal(`<h3>المفضلة</h3>${L.map(p => `<div class="row"><span>${esc(p.name)} - ${money(p.price)}</span><span><button data-wa="${p.id}">🛒</button> <button data-wr="${p.id}">✕</button></span></div>`).join("")}`);
-  $("modalBody").querySelectorAll("[data-wa]").forEach(b => b.onclick = () => addToCart(b.dataset.wa));
-  $("modalBody").querySelectorAll("[data-wr]").forEach(b => b.onclick = () => { wish = wish.filter(x => x !== b.dataset.wr); saveWish(); render(); $("wishBtn").onclick(); });
-};
+$("q").oninput = render; $("cat").onchange = render;
 function cartLines() { return cart.map(i => { const p = products.find(x => x.id === i.id); return p ? { p, qty: i.qty } : null; }).filter(Boolean); }
 function showCart() {
   const L = cartLines(), total = L.reduce((a, l) => a + l.p.price * l.qty, 0);
@@ -103,9 +61,9 @@ function showAuth(mode = "in") {
 }
 async function refreshUser() {
   const { data } = await sb.auth.getSession(); user = data.session?.user ?? null;
-  $("userBtn").textContent = user ? "خروج" : "تسجيل الدخول";
+  $("userBtn").textContent = user ? "خروج" : "دخول";
   if (user) { const { data: a } = await sb.rpc("is_admin"); $("adminLink").hidden = !a; } else $("adminLink").hidden = true;
 }
 $("userBtn").onclick = async () => { if (user) { await sb.auth.signOut(); } else showAuth(); };
 sb.auth.onAuthStateChange(() => refreshUser());
-saveCart(); saveWish(); load(); refreshUser();
+saveCart(); load(); refreshUser();
